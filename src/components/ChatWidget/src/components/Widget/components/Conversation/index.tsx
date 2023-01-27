@@ -3,7 +3,6 @@ import { useRef, useState, useEffect } from 'react';
 import { Picker } from 'emoji-mart';
 import cn from 'classnames';
 
-import Header from './components/Header';
 import Messages from './components/Messages';
 import Sender from './components/Sender';
 import QuickButtons from './components/QuickButtons';
@@ -108,13 +107,6 @@ function Conversation({
     <div id="rcw-conversation-container" onMouseDown={initResize} 
       className={cn('rcw-conversation-container', className)} aria-live="polite">
       {resizable && <div className="rcw-conversation-resizer" />}
-      <Header
-        title={title}
-        subtitle={subtitle}
-        toggleChat={toggleChat}
-        showCloseButton={showCloseButton}
-        titleAvatar={titleAvatar}
-      />
       <Messages
         profileAvatar={profileAvatar}
         profileClientAvatar={profileClientAvatar}

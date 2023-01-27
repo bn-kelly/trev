@@ -8,6 +8,7 @@ import { GlobalState } from 'src/store/types';
 import { getCaretIndex, isFirefox, updateCaret, insertNodeAtCaret, getSelection } from '../../../../../../utils/contentEditable'
 const send = require('../../../../../../../assets/send_button.svg') as string;
 const emoji = require('../../../../../../../assets/icon-smiley.svg') as string;
+const camera = require('../../../../../../../assets/camera-shutter.svg') as string;
 const brRegex = /<br>/g;
 
 import './style.scss';
@@ -127,9 +128,6 @@ function Sender({ sendMessage, placeholder, disabledInput, autofocus, onTextInpu
 
   return (
     <div ref={refContainer} className="rcw-sender">
-      <button className='rcw-picker-btn' type="submit" onClick={handlerPressEmoji}>
-        <img src={emoji} className="rcw-picker-icon" alt="" />
-      </button>
       <div className={cn('rcw-new-message', {
           'rcw-message-disable': disabledInput,
         })
@@ -146,11 +144,8 @@ function Sender({ sendMessage, placeholder, disabledInput, autofocus, onTextInpu
           onKeyUp={handlerOnKeyUp}
           onKeyDown={handlerOnKeyDown}
         />
-        
+        <img src={camera} className="rcw-logo" alt="logo" />
       </div>
-      <button type="submit" className="rcw-send" onClick={handlerSendMessage}>
-        <img src={send} className="rcw-send-icon" alt={buttonAlt} />
-      </button>
     </div>
   );
 }

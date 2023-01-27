@@ -18,7 +18,7 @@ import {
 } from './src/store/dispatcher';
 
 export {
-  ConnectedWidget as Widget,
+  ConnectedWidget as ChatWidget,
   addUserMessage,
   addResponseMessage,
   addLinkSnippet,

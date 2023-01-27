@@ -7,8 +7,8 @@ import { GlobalState } from 'src/store/types';
 import { AnyFunction } from 'src/utils/types';
 import { openFullscreenPreview } from '../../store/actions';
 
+import Header from './components/Header';
 import Conversation from './components/Conversation';
-import Launcher from './components/Launcher';
 import FullScreenPreview from './components/FullScreenPreview';
 
 import './style.scss';
@@ -128,6 +128,19 @@ function WidgetLayout({
         })
       }
     >
+      <Header
+        title={title}
+        subtitle={subtitle}
+        toggleChat={onToggleConversation}
+        showCloseButton={showCloseButton}
+        titleAvatar={titleAvatar}
+        chatId={chatId}
+        openLabel={launcherOpenLabel}
+        closeLabel={launcherCloseLabel}
+        closeImg={launcherCloseImg}
+        openImg={launcherOpenImg}
+        showBadge={showBadge}
+      />
       {showChat &&
         <Conversation
           title={title}
@@ -148,19 +161,6 @@ function WidgetLayout({
           showTimeStamp={showTimeStamp}
           resizable={resizable}
           emojis={emojis}
-        />
-      }
-      {customLauncher ?
-        customLauncher(onToggleConversation) :
-        !fullScreenMode &&
-        <Launcher
-          toggle={onToggleConversation}
-          chatId={chatId}
-          openLabel={launcherOpenLabel}
-          closeLabel={launcherCloseLabel}
-          closeImg={launcherCloseImg}
-          openImg={launcherOpenImg}
-          showBadge={showBadge}
         />
       }
       {

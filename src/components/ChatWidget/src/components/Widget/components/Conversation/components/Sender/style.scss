@@ -2,7 +2,7 @@
 
 .rcw-sender {
   align-items: flex-end;
-  background-color: $grey-2;
+  background-color: $white;
   border-radius: 0 0 10px 10px;
   display: flex;
   height: max-content;
@@ -18,12 +18,14 @@
 }
 
 .rcw-new-message {
-  background-color: $white;
+  background-color: $grey-2;
   border: 0;
   border-radius: 5px;
-  padding: 10px 5px;
+  padding: 15px 15px;
   resize: none;
-  width: calc(100% - 75px);
+  width: calc(100% - 30px);
+  display: flex;
+  align-items: center;
 
   &:focus {
     outline: none;
@@ -32,17 +34,22 @@
   &.expand {
     height: 40px;
   }
+
+  .rcw-logo {
+    filter: invert(55%) sepia(7%) saturate(16%) hue-rotate(16deg) brightness(90%) contrast(82%);
+  }
 }
 
 .rcw-input {
   display: block;
   height: 100%;
   line-height: 20px;
-  max-height: 78px;
+  max-height: 20px;
   overflow-y: auto;
   user-select: text;
   white-space: pre-wrap;
   word-wrap: break-word;
+  flex-grow: 1;
 
   &:focus-visible {
     outline: none;
