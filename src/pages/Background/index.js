@@ -2,8 +2,8 @@ import { setValueToStorage } from '../../global';
 import {
     AUTHORIZE_GOOGLE,
     NEW_USER_MESSAGE,
-    OPENAI_API_KEY,
 } from '../../constants';
+import { OPENAI_API_KEY } from 'secrets';
 
 let emails = [];
 
