@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ChatWidget, toggleMsgLoader, addResponseMessage } from '../../components/ChatWidget';
 import GoogleAuth from '../../components/GoogleAuth';
-import { Authorize_Google } from '../../constants';
+import { AUTHORIZE_GOOGLE, NEW_USER_MESSAGE } from '../../constants';
 import { getValueFromStorage } from '../../global';
     
 const Content = () => {
@@ -13,12 +13,14 @@ const Content = () => {
             console.log('result', result);
             setAuthorized(result);
         }
-        getAuthStatus();s
+        getAuthStatus();
+
+        addResponseMessage('gm! what emails would you like to find?');
     }, [])
     
     const handleAuthorization = () => {
         chrome.runtime.sendMessage({
-            action: Authorize_Google
+            action: AUTHORIZE_GOOGLE
         }, (response) => {
             setAuthorized(response);
         });
@@ -26,11 +28,15 @@ const Content = () => {
 
     const handleNewUserMessage = (message) => {
         toggleMsgLoader();
-        setTimeout(() => {
+        chrome.runtime.sendMessage({
+            action: NEW_USER_MESSAGE,
+            data: {
+                message,
+            },
+        }, (response) => {
             toggleMsgLoader();
-            console.log('Me:', message);
-            addResponseMessage('OK, I got it');
-        }, 2000);
+            addResponseMessage(response);
+        });
     };
 
     return (
@@ -39,6 +45,7 @@ const Content = () => {
             <ChatWidget
                 title='Trev'
                 senderPlaceHolder='what would you like to find?'
+                showBadge={false}
                 handleNewUserMessage={handleNewUserMessage}
             />}
             { !authorized && <GoogleAuth handleAuthorization={handleAuthorization} />}

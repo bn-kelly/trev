@@ -1,18 +1,54 @@
 import { setValueToStorage } from '../../global';
-import { Authorize_Google } from '../../constants';
+import {
+    AUTHORIZE_GOOGLE,
+    NEW_USER_MESSAGE,
+    OPENAI_API_KEY,
+} from '../../constants';
 
-const emails = [];
+let emails = [];
 
 async function init() {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         onMessageReceived(request, sender, sendResponse);
         return true;
     });
-    getEmails();
+
+    emails = await getEmails();
+    for (const email of emails) {
+        const prompt = `Summarize this for a business focus:
+            ${email.content
+                .replace(/(?:https?|ftp):\/\/[\n\S]+/g, '')
+                .replace(/(\r\n|\n|\r)/gm, '')}`;
+        const response = await fetch(
+            'https://api.openai.com/v1/completions',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: "text-davinci-003",
+                    prompt: prompt,
+                    temperature: 0,
+                    max_tokens: 1000,
+                    top_p: 1,
+                    frequency_penalty: 0,
+                    presence_penalty: 0,
+                }),
+            }
+        );
+
+        const data = await response.json();
+        if (data.choices && data.choices.length > 0) {
+            email.summary = data.choices[0].text;
+        }
+    }
+    console.log('emails', emails);
 }
 
 async function onMessageReceived(request, sender, sendResponse) {
-    if (request.action === Authorize_Google) {
+    if (request.action === AUTHORIZE_GOOGLE) {
         const token = await getAuthToken();
 
         if (token) {
@@ -22,6 +58,57 @@ async function onMessageReceived(request, sender, sendResponse) {
         }
 
         sendResponse(!!token);
+    } else if (request.action === NEW_USER_MESSAGE) {
+        if (emails.length === 0) {
+            sendResponse('I cannot find any email.');
+        }
+
+        const message = request.data.message;
+
+        let prompt = '';
+        for (const email of emails) {
+            prompt = `${prompt}Q: question_id=${email.id}\nA: ${email.summary}\n`;
+        }
+        prompt = `${prompt}Q: show me only question_id associated to ${message}`;
+
+        const response = await fetch(
+            'https://api.openai.com/v1/completions',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: "text-davinci-003",
+                    prompt: prompt,
+                    temperature: 0,
+                    max_tokens: 60,
+                    top_p: 1,
+                    frequency_penalty: 0,
+                    presence_penalty: 0,
+                }),
+            }
+        );
+        const data = await response.json();
+
+        if (data.choices && data.choices.length > 0) {
+            const ids = data.choices[0].text
+                .replace('A:', '')
+                .replace('question_id =', '')
+                .split('\n');
+            const answers = emails.filter((e) => {
+                return ids.includes(e.id);
+            });
+
+            if (answers.length > 0) {
+                sendResponse(`${answers[0].content.substring(0, 39)}...`);
+            } else {
+                sendResponse('I cannot find any email.');
+            }
+        } else {
+            sendResponse('I cannot find any email.');
+        }
     }
 }
 
@@ -42,22 +129,50 @@ async function getEmails() {
     let response = await getEmailsWithPageToken(null, token);
     let nextPageToken = response.nextPageToken;
     let emailIdList = response.messages;
+    let ret = [];
 
     while (nextPageToken) {
         response = await getEmailsWithPageToken(nextPageToken, token);
         nextPageToken = response.nextPageToken;
         emailIdList = [...emailIdList, ...response.messages];
     }
-    console.log('emailIdList', emailIdList);
 
     for (const emailId of emailIdList) {
-        const content = await getEmailContent(emailId.id);
-        if (content) {
-            emails.push(content);
+        const email = await getEmail(emailId.id);
+
+        if (ret.length > 4) {
+            break;
+        }
+
+        if (email) {
+            let data = '';
+            if (email.payload.parts && email.payload.parts.length > 0) {
+                const part = email.payload.parts.find((part) => {
+                    return part.mimeType === 'text/plain';
+                });
+                if (part) {
+                    data = part.body.data;
+                } else {
+                    continue;
+                }
+            } else {
+                if (email.payload.mimeType === 'text/plain') {
+                    data = email.payload.body.data;
+                } else {
+                    continue;
+                }
+            }
+
+            ret.push({
+                id: email.id,
+                threadId: email.threadId,
+                date: email.internalDate,
+                content: decodeBase64(data),
+            });
         }
     }
 
-    console.log('emails', emails);
+    return ret;
 }
 
 async function getEmailsWithPageToken(pageToken) {
@@ -89,13 +204,13 @@ async function getEmailsWithPageToken(pageToken) {
     });
 }
 
-async function getEmailContent(id) {
+async function getEmail(id) {
     const token = await getAuthToken();
     if (!token) {
         return null;
     }
 
-    const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=raw`;
+    const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=full`;
 
     return new Promise((resolve) => {
         fetch(url, {
@@ -113,6 +228,23 @@ async function getEmailContent(id) {
             resolve(null);
         })
     });
+}
+
+function decodeBase64(input) {
+    input = input
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+    // Pad out with standard base64 required padding characters
+    var pad = input.length % 4;
+    if (pad) {
+        if (pad === 1) {
+            throw new Error('InvalidLengthError: Input base64url string is the wrong length to determine padding');
+        }
+        input += new Array(5 - pad).join('=');
+    }
+
+    return atob(input);
 }
 
 init();
