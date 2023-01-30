@@ -40,5 +40,16 @@
       ],
       "matches": []
     }
+  ],
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAk+tZW9CPaZqm250Z9DkvSc5OjulRjU8yVGDY/MlblwyryqM0FGP2z1LHz5jC8J2A6zyvNUKUr2MWnobr0fMYNKyI1mTeTNEUFkTe0rVqDYPKCId5DPL/lMdgF9y1tK9YkDNjaKrnYRUZSunA7eY+rK+36untk2i8sOKO6juWSgOJT/X/9NW7EDEkgAmjQNHoLWbxyTUeWwHNkRRDT8HU4t4cVvfJvydWQ/voYdqt7xm7YBLGrk04upVHX15doL04wIEjZtJPq4yRHC0LgMORL2BYpOQNgrqFjvGKovIyWa+ukr9olqa2C6inzWxiRJ2RVSZ+fjWR1efWDRePgoekOwIDAQAB",
+  "oauth2": {
+    "client_id": "810836185305-695hkue39r88899142d6qv9c4ug4qv35.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.readonly"
+    ]
+  },
+  "permissions": [
+    "storage",
+    "identity"
   ]
 }
