@@ -1,7 +1,7 @@
 {
   "name": "trev",
   "version": "1.0.0",
-  "description": "Gmail Assistant",
+  "description": "Talk to Your Email",
   "repository": {
     "type": "git",
     "url": "https://github.com/lightcodeweb/trev.git"
