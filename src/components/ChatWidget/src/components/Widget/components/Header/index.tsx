@@ -2,7 +2,7 @@ import React from 'react';
 import './style.scss';
 import Launcher from '../Launcher';
 
-const camera = require('../../../../../assets/camera-shutter.svg') as string;
+const camera = require('../../../../../assets/logo.svg') as string;
 
 type Props = {
   title: string;
