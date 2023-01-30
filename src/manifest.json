@@ -2,16 +2,8 @@
   "manifest_version": 3,
   "name": "Trev",
   "description": "Talk to Your Email",
-  "options_page": "options.html",
   "background": {
     "service_worker": "background.bundle.js"
-  },
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icon-34.png"
-  },
-  "chrome_url_overrides": {
-    "newtab": "newtab.html"
   },
   "icons": {
     "128": "icon-128.png"
@@ -30,7 +22,6 @@
       ]
     }
   ],
-  "devtools_page": "devtools.html",
   "web_accessible_resources": [
     {
       "resources": [
