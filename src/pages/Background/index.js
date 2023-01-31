@@ -21,8 +21,11 @@ async function init() {
     chrome.identity.clearAllCachedAuthTokens(async () => {
       const token = await getAuthToken(false);
       if (!token) {
-        setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
-        setValueToStorage({ [IS_EMAILS_IMPORTED]: false });
+        await setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
+        await setValueToStorage({ [IS_EMAILS_IMPORTED]: false });
+      } else {
+        await setValueToStorage({ [IS_EMAILS_IMPORTED]: false });
+        importEmails();
       }
       chrome.tabs.create({ url: 'https://mail.google.com/' });
     });
@@ -34,19 +37,14 @@ async function onMessageReceived(request, sender, sendResponse) {
     const token = await getAuthToken(true);
 
     if (token) {
-      setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 1 });
+      await setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 1 });
       sendResponse(1);
     } else {
-      setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
+      await setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
       sendResponse(0);
     }
   } else if (request.action === IMPORT_EMAILS) {
-    let emails = await getEmails();
-    emails = await summarizeEmails(emails);
-
-    setValueToStorage({ [EMAILS]: emails }, STORAGE_LOCAL);
-    setValueToStorage({ [IS_EMAILS_IMPORTED]: true });
-    console.log('emails', emails);
+    await importEmails();
     sendResponse(true);
   } else if (request.action === NEW_USER_MESSAGE) {
     const emails = await getValueFromStorage(EMAILS, STORAGE_LOCAL);
@@ -73,6 +71,15 @@ async function getAuthToken(interactive) {
   });
 }
 
+async function importEmails() {
+  let emails = await getEmails();
+  emails = await summarizeEmails(emails);
+
+  await setValueToStorage({ [EMAILS]: emails }, STORAGE_LOCAL);
+  await setValueToStorage({ [IS_EMAILS_IMPORTED]: true });
+  console.log('emails', emails);
+}
+
 async function getEmails() {
   let response = await getEmailsWithPageToken(null);
   let nextPageToken = response.nextPageToken;
@@ -87,6 +94,10 @@ async function getEmails() {
 
   for (const emailId of emailIdList) {
     const email = await getEmail(emailId.id);
+
+    if (ret.length > 9) {
+      break;
+    }
 
     if (email) {
       let data = '';
@@ -135,11 +146,12 @@ async function getEmailsWithPageToken(pageToken) {
     return { messages: [], nextPageToken: null };
   }
 
-  const today = new Date();
-  const qDate = new Date(new Date().setDate(today.getDate() - 30));
-  const query = `after:${qDate.getFullYear()}/${qDate.getMonth() + 1}/${qDate.getDate()}`;
-  let url =
-    `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500&q=${query}`;
+  // const today = new Date();
+  // const qDate = new Date(new Date().setDate(today.getDate() - 30));
+  // const query = `after:${qDate.getFullYear()}/${qDate.getMonth() + 1}/${qDate.getDate()}`;
+  // let url =
+  // `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500&q=${query}`;
+  let url = `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500`;
   if (pageToken) {
     url = `${url}&pageToken=${pageToken}`;
   }

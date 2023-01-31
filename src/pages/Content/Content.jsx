@@ -24,9 +24,17 @@ const Content = () => {
       const isAuthorizedGoogle = await getValueFromStorage(
         IS_AUTHORIZED_GOOGLE
       );
-      const isEmailsImported = await getValueFromStorage(IS_EMAILS_IMPORTED);
       setAuthorized(isAuthorizedGoogle);
-      setEmailsImported(isEmailsImported);
+
+      if (isAuthorizedGoogle) {
+        const interval = setInterval(async () => {
+          const isEmailsImported = await getValueFromStorage(IS_EMAILS_IMPORTED);
+          setEmailsImported(isEmailsImported);
+          if (isEmailsImported) {
+            clearInterval(interval);
+          }
+        }, 1000);
+      }
     };
     getStatus();
 
