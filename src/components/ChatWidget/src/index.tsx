@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 
 import Widget from './components/Widget';
 
-import store from  './store';
+import store from './store';
 
 import { AnyFunction } from './utils/types';
 
@@ -23,10 +23,10 @@ type Props = {
   handleTextInputChange?: (event: any) => void;
   chatId?: string;
   handleToggle?: AnyFunction;
-  launcherOpenLabel?: string,
-  launcherCloseLabel?: string,
-  launcherCloseImg?: string,
-  launcherOpenImg?: string,
+  launcherOpenLabel?: string;
+  launcherCloseLabel?: string;
+  launcherCloseImg?: string;
+  launcherOpenImg?: string;
   sendButtonAlt?: string;
   showTimeStamp?: boolean;
   imagePreview?: boolean;
@@ -64,7 +64,7 @@ function ConnectedWidget({
   handleSubmit,
   showBadge,
   resizable,
-  emojis
+  emojis,
 }: Props) {
   return (
     <Provider store={store}>
@@ -91,7 +91,7 @@ function ConnectedWidget({
         sendButtonAlt={sendButtonAlt}
         showTimeStamp={showTimeStamp}
         imagePreview={imagePreview}
-        zoomStep={zoomStep} 
+        zoomStep={zoomStep}
         handleSubmit={handleSubmit}
         showBadge={showBadge}
         resizable={resizable}

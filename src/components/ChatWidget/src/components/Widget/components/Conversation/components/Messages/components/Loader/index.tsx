@@ -5,7 +5,7 @@ import './styles.scss';
 
 type Props = {
   typing: boolean;
-}
+};
 
 function Loader({ typing }: Props) {
   return (

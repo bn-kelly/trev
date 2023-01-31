@@ -31,7 +31,7 @@
   height: 30px;
 }
 
-@media screen and (max-width: 800px){
+@media screen and (max-width: 800px) {
   .rcw-launcher {
     @include launcher-fs;
   }

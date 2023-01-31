@@ -54,7 +54,7 @@ function Conversation({
   sendButtonAlt,
   showTimeStamp,
   resizable,
-  emojis
+  emojis,
 }: Props) {
   const [containerDiv, setContainerDiv] = useState<HTMLElement | null>();
   let startX, startWidth;
@@ -67,45 +67,51 @@ function Conversation({
   const initResize = (e) => {
     if (resizable) {
       startX = e.clientX;
-      if (document.defaultView && containerDiv){
-        startWidth = parseInt(document.defaultView.getComputedStyle(containerDiv).width);
+      if (document.defaultView && containerDiv) {
+        startWidth = parseInt(
+          document.defaultView.getComputedStyle(containerDiv).width
+        );
         window.addEventListener('mousemove', resize, false);
         window.addEventListener('mouseup', stopResize, false);
       }
     }
-  }
+  };
 
   const resize = (e) => {
     if (containerDiv) {
-      containerDiv.style.width = (startWidth - e.clientX + startX) + 'px';
+      containerDiv.style.width = startWidth - e.clientX + startX + 'px';
     }
-  }
+  };
 
   const stopResize = (e) => {
     window.removeEventListener('mousemove', resize, false);
     window.removeEventListener('mouseup', stopResize, false);
-  }
-  
-  const [pickerOffset, setOffset] = useState(0)
+  };
+
+  const [pickerOffset, setOffset] = useState(0);
   const senderRef = useRef<ISenderRef>(null!);
-  const [pickerStatus, setPicket] = useState(false) 
- 
+  const [pickerStatus, setPicket] = useState(false);
+
   const onSelectEmoji = (emoji) => {
-    senderRef.current?.onSelectEmoji(emoji)
-  }
+    senderRef.current?.onSelectEmoji(emoji);
+  };
 
   const togglePicker = () => {
-    setPicket(prevPickerStatus => !prevPickerStatus)
-  }
+    setPicket((prevPickerStatus) => !prevPickerStatus);
+  };
 
   const handlerSendMsn = (event) => {
-    sendMessage(event)
-    if(pickerStatus) setPicket(false)
-  }
+    sendMessage(event);
+    if (pickerStatus) setPicket(false);
+  };
 
   return (
-    <div id="rcw-conversation-container" onMouseDown={initResize} 
-      className={cn('rcw-conversation-container', className)} aria-live="polite">
+    <div
+      id="rcw-conversation-container"
+      onMouseDown={initResize}
+      className={cn('rcw-conversation-container', className)}
+      aria-live="polite"
+    >
       {resizable && <div className="rcw-conversation-resizer" />}
       <Messages
         profileAvatar={profileAvatar}
@@ -113,10 +119,17 @@ function Conversation({
         showTimeStamp={showTimeStamp}
       />
       <QuickButtons onQuickButtonClicked={onQuickButtonClicked} />
-      {emojis && pickerStatus && (<Picker 
-        style={{ position: 'absolute', bottom: pickerOffset, left: '0', width: '100%' }}
-        onSelect={onSelectEmoji}
-      />)}
+      {emojis && pickerStatus && (
+        <Picker
+          style={{
+            position: 'absolute',
+            bottom: pickerOffset,
+            left: '0',
+            width: '100%',
+          }}
+          onSelect={onSelectEmoji}
+        />
+      )}
       <Sender
         ref={senderRef}
         sendMessage={handlerSendMsn}

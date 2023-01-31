@@ -1,284 +1,285 @@
 import { getValueFromStorage, setValueToStorage } from '../../global';
 import { OPENAI_API_KEY } from 'secrets';
 import {
-    AUTHORIZE_GOOGLE,
-    NEW_USER_MESSAGE,
-    IMPORT_EMAILS,
-    IS_AUTHORIZED_GOOGLE,
-    IS_EMAILS_IMPORTED,
-    EMAILS,
-    STORAGE_GLOBAL,
-    STORAGE_LOCAL
+  AUTHORIZE_GOOGLE,
+  NEW_USER_MESSAGE,
+  IMPORT_EMAILS,
+  IS_AUTHORIZED_GOOGLE,
+  IS_EMAILS_IMPORTED,
+  EMAILS,
+  STORAGE_GLOBAL,
+  STORAGE_LOCAL,
 } from '../../constants';
 
 async function init() {
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        onMessageReceived(request, sender, sendResponse);
-        return true;
-    });
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    onMessageReceived(request, sender, sendResponse);
+    return true;
+  });
 
-    chrome.runtime.onInstalled.addListener(() => {
-        chrome.identity.clearAllCachedAuthTokens(async () => {
-            const token = await getAuthToken(false);
-            if (!token) {
-                setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
-                setValueToStorage({ [IS_EMAILS_IMPORTED]: false });
-            }
-            chrome.tabs.create({ url: 'https://mail.google.com/' });
-        });
+  chrome.runtime.onInstalled.addListener(() => {
+    chrome.identity.clearAllCachedAuthTokens(async () => {
+      const token = await getAuthToken(false);
+      if (!token) {
+        setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
+        setValueToStorage({ [IS_EMAILS_IMPORTED]: false });
+      }
+      chrome.tabs.create({ url: 'https://mail.google.com/' });
     });
+  });
 }
 
 async function onMessageReceived(request, sender, sendResponse) {
-    if (request.action === AUTHORIZE_GOOGLE) {
-        const token = await getAuthToken(true);
+  if (request.action === AUTHORIZE_GOOGLE) {
+    const token = await getAuthToken(true);
 
-        if (token) {
-            setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 1 });
-            sendResponse(1);
-        } else {
-            setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
-            sendResponse(0);
-        }
-    } else if (request.action === IMPORT_EMAILS) {
-        let emails = await getEmails();
-        emails = await summarizeEmails(emails);
-
-        setValueToStorage({ [EMAILS]: emails }, STORAGE_LOCAL);
-        setValueToStorage({ [IS_EMAILS_IMPORTED]: true });
-        console.log('emails', emails);
-        sendResponse(true);
-    } else if (request.action === NEW_USER_MESSAGE) {
-        const emails = await getValueFromStorage(EMAILS, STORAGE_LOCAL);
-        if (emails.length === 0) {
-            sendResponse([]);
-        }
-
-        const message = request.data.message;
-        const answers = await runQuery(message, emails);
-
-        if (answers.length > 0) {
-            sendResponse(answers);
-        } else {
-            sendResponse([]);
-        }
+    if (token) {
+      setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 1 });
+      sendResponse(1);
+    } else {
+      setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
+      sendResponse(0);
     }
+  } else if (request.action === IMPORT_EMAILS) {
+    let emails = await getEmails();
+    emails = await summarizeEmails(emails);
+
+    setValueToStorage({ [EMAILS]: emails }, STORAGE_LOCAL);
+    setValueToStorage({ [IS_EMAILS_IMPORTED]: true });
+    console.log('emails', emails);
+    sendResponse(true);
+  } else if (request.action === NEW_USER_MESSAGE) {
+    const emails = await getValueFromStorage(EMAILS, STORAGE_LOCAL);
+    if (emails.length === 0) {
+      sendResponse([]);
+    }
+
+    const message = request.data.message;
+    const answers = await runQuery(message, emails);
+
+    if (answers.length > 0) {
+      sendResponse(answers);
+    } else {
+      sendResponse([]);
+    }
+  }
 }
 
 async function getAuthToken(interactive) {
-    return new Promise((resolve) => {
-        chrome.identity.getAuthToken({ interactive: interactive }, (token) => {
-            resolve(token);
-        });
+  return new Promise((resolve) => {
+    chrome.identity.getAuthToken({ interactive: interactive }, (token) => {
+      resolve(token);
     });
+  });
 }
 
 async function getEmails() {
-    let response = await getEmailsWithPageToken(null);
-    let nextPageToken = response.nextPageToken;
-    let emailIdList = response.messages;
-    let ret = [];
+  let response = await getEmailsWithPageToken(null);
+  let nextPageToken = response.nextPageToken;
+  let emailIdList = response.messages;
+  let ret = [];
 
-    while (nextPageToken) {
-        response = await getEmailsWithPageToken(nextPageToken);
-        nextPageToken = response.nextPageToken;
-        emailIdList = [...emailIdList, ...response.messages];
-    }
+  while (nextPageToken) {
+    response = await getEmailsWithPageToken(nextPageToken);
+    nextPageToken = response.nextPageToken;
+    emailIdList = [...emailIdList, ...response.messages];
+  }
 
-    for (const emailId of emailIdList) {
-        const email = await getEmail(emailId.id);
+  for (const emailId of emailIdList) {
+    const email = await getEmail(emailId.id);
 
-        if (email) {
-            let data = '';
-            if (email.payload.parts && email.payload.parts.length > 0) {
-                const part = email.payload.parts.find((part) => {
-                    return part.mimeType === 'text/plain';
-                });
-                if (part) {
-                    data = part.body.data;
-                } else {
-                    continue;
-                }
-            } else {
-                if (email.payload.mimeType === 'text/plain') {
-                    data = email.payload.body.data;
-                } else {
-                    continue;
-                }
-            }
-
-            const from = email.payload.headers.find((h) => {
-                return h.name === 'From';
-            }).value;
-
-            const to = email.payload.headers.find((h) => {
-                return h.name === 'To';
-            }).value;
-
-            ret.push({
-                id: email.id,
-                threadId: email.threadId,
-                date: email.internalDate,
-                content: decodeBase64(data),
-                from: from,
-                to: to,
-            });
+    if (email) {
+      let data = '';
+      if (email.payload.parts && email.payload.parts.length > 0) {
+        const part = email.payload.parts.find((part) => {
+          return part.mimeType === 'text/plain';
+        });
+        if (part) {
+          data = part.body.data;
+        } else {
+          continue;
         }
-    }
+      } else {
+        if (email.payload.mimeType === 'text/plain') {
+          data = email.payload.body.data;
+        } else {
+          continue;
+        }
+      }
 
-    return ret;
+      const from = email.payload.headers.find((h) => {
+        return h.name === 'From';
+      }).value;
+
+      const to = email.payload.headers.find((h) => {
+        return h.name === 'To';
+      }).value;
+
+      ret.push({
+        id: email.id,
+        threadId: email.threadId,
+        date: email.internalDate,
+        content: decodeBase64(data),
+        from: from,
+        to: to,
+      });
+    }
+  }
+
+  return ret;
 }
 
 async function getEmailsWithPageToken(pageToken) {
-    const token = await getAuthToken(false);
-    if (!token) {
-        return { messages: [], nextPageToken: null };
-    }
+  const token = await getAuthToken(false);
+  if (!token) {
+    return { messages: [], nextPageToken: null };
+  }
 
-    let url = 'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500';
-    if (pageToken) {
-        url = `${url}&pageToken=${pageToken}`;
-    }
+  let url =
+    'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500';
+  if (pageToken) {
+    url = `${url}&pageToken=${pageToken}`;
+  }
 
-    return new Promise((resolve) => {
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-        }).then((response) => {
-            return response.json();
-        }).then((response) => {
-            resolve(response);
-        }).catch((error) => {
-            console.log("error", error);
-            resolve({ messages: [], nextPageToken: null });
-        })
-    });
+  return new Promise((resolve) => {
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        resolve(response);
+      })
+      .catch((error) => {
+        console.log('error', error);
+        resolve({ messages: [], nextPageToken: null });
+      });
+  });
 }
 
 async function getEmail(id) {
-    const token = await getAuthToken(false);
-    if (!token) {
-        return null;
-    }
+  const token = await getAuthToken(false);
+  if (!token) {
+    return null;
+  }
 
-    const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=full`;
+  const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=full`;
 
-    return new Promise((resolve) => {
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-        }).then((response) => {
-            return response.json();
-        }).then((response) => {
-            resolve(response);
-        }).catch((error) => {
-            console.log("error", error);
-            resolve(null);
-        })
-    });
+  return new Promise((resolve) => {
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        resolve(response);
+      })
+      .catch((error) => {
+        console.log('error', error);
+        resolve(null);
+      });
+  });
 }
 
 function decodeBase64(input) {
-    input = input
-        .replace(/-/g, '+')
-        .replace(/_/g, '/');
+  input = input.replace(/-/g, '+').replace(/_/g, '/');
 
-    // Pad out with standard base64 required padding characters
-    var pad = input.length % 4;
-    if (pad) {
-        if (pad === 1) {
-            throw new Error('InvalidLengthError: Input base64url string is the wrong length to determine padding');
-        }
-        input += new Array(5 - pad).join('=');
+  // Pad out with standard base64 required padding characters
+  var pad = input.length % 4;
+  if (pad) {
+    if (pad === 1) {
+      throw new Error(
+        'InvalidLengthError: Input base64url string is the wrong length to determine padding'
+      );
     }
+    input += new Array(5 - pad).join('=');
+  }
 
-    return atob(input);
+  return atob(input);
 }
 
 async function summarizeEmails(emails) {
-    for (const email of emails) {
-        const prompt = `Summarize this for a business focus:
+  for (const email of emails) {
+    const prompt = `Summarize this for a business focus:
             ${email.content
-                .replace(/(?:https?|ftp):\/\/[\n\S]+/g, '')
-                .replace(/(\r\n|\n|\r)/gm, '')}`;
-        const response = await fetch(
-            'https://api.openai.com/v1/completions',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${OPENAI_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: "text-davinci-003",
-                    prompt: prompt,
-                    temperature: 0,
-                    max_tokens: 1000,
-                    top_p: 1,
-                    frequency_penalty: 0,
-                    presence_penalty: 0,
-                }),
-            }
-        );
+              .replace(/(?:https?|ftp):\/\/[\n\S]+/g, '')
+              .replace(/(\r\n|\n|\r)/gm, '')}`;
+    const response = await fetch('https://api.openai.com/v1/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'text-davinci-003',
+        prompt: prompt,
+        temperature: 0,
+        max_tokens: 1000,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      }),
+    });
 
-        const data = await response.json();
-        if (data.choices && data.choices.length > 0) {
-            email.summary = data.choices[0].text;
-        }
+    const data = await response.json();
+    if (data.choices && data.choices.length > 0) {
+      email.summary = data.choices[0].text;
     }
+  }
 
-    return emails;
+  return emails;
 }
 
 async function runQuery(message, emails) {
-    let prompt = '';
-    for (const email of emails) {
-        prompt = `${prompt}Q: question_id=${email.id}\nA: ${email.summary}\n`;
+  let prompt = '';
+  for (const email of emails) {
+    prompt = `${prompt}Q: question_id=${email.id}\nA: ${email.summary}\n`;
+  }
+  prompt = `${prompt}Q: show me only question_id associated to ${message}`;
+
+  const response = await fetch('https://api.openai.com/v1/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'text-davinci-003',
+      prompt: prompt,
+      temperature: 0,
+      max_tokens: 60,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+    }),
+  });
+  const data = await response.json();
+
+  if (data.choices && data.choices.length > 0) {
+    const ids = data.choices[0].text
+      .replace('A:', '')
+      .replace('question_id =', '')
+      .split('\n');
+    const answers = emails.filter((e) => {
+      return ids.includes(e.id);
+    });
+
+    if (answers.length > 0) {
+      return answers;
     }
-    prompt = `${prompt}Q: show me only question_id associated to ${message}`;
+  }
 
-    const response = await fetch(
-        'https://api.openai.com/v1/completions',
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
-            },
-            body: JSON.stringify({
-                model: "text-davinci-003",
-                prompt: prompt,
-                temperature: 0,
-                max_tokens: 60,
-                top_p: 1,
-                frequency_penalty: 0,
-                presence_penalty: 0,
-            }),
-        }
-    );
-    const data = await response.json();
-
-    if (data.choices && data.choices.length > 0) {
-        const ids = data.choices[0].text
-            .replace('A:', '')
-            .replace('question_id =', '')
-            .split('\n');
-        const answers = emails.filter((e) => {
-            return ids.includes(e.id);
-        });
-
-        if (answers.length > 0) {
-            return answers;
-        }
-    }
-
-    return [];
+  return [];
 }
 
 init();

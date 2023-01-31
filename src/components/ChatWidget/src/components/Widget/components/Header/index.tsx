@@ -17,7 +17,7 @@ type Props = {
   closeImg: string;
   openImg: string;
   showBadge?: boolean;
-}
+};
 
 function Header({
   title,
@@ -39,7 +39,7 @@ function Header({
         {title}
         {showLogo && <img src={camera} className="rcw-logo" alt="logo" />}
       </h4>
-      
+
       <Launcher
         toggle={toggleChat}
         chatId={chatId}

@@ -42,7 +42,8 @@
   }
 
   .rcw-logo {
-    filter: invert(55%) sepia(7%) saturate(16%) hue-rotate(16deg) brightness(90%) contrast(82%);
+    filter: invert(55%) sepia(7%) saturate(16%) hue-rotate(16deg)
+      brightness(90%) contrast(82%);
   }
 }
 
@@ -64,7 +65,7 @@
 
   &[placeholder]:empty::before {
     content: attr(placeholder);
-    color: $grey-0; 
+    color: $grey-0;
   }
 
   &::-webkit-scrollbar {
@@ -72,7 +73,8 @@
   }
 }
 
-.rcw-send, .rcw-picker-btn {
+.rcw-send,
+.rcw-picker-btn {
   background: $grey-2;
   border: 0;
   cursor: pointer;
@@ -87,7 +89,7 @@
   cursor: not-allowed;
 }
 
-@media screen and (max-width: 800px)  {
+@media screen and (max-width: 800px) {
   .rcw-sender {
     border-radius: 0;
     flex-shrink: 0;

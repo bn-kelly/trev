@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import "@fontsource/dm-sans";
+import '@fontsource/dm-sans';
 import Content from './Content';
 
 console.log('Content script works!');
@@ -11,4 +11,3 @@ container.id = 'trev-container';
 document.body.appendChild(container);
 const root = createRoot(container);
 root.render(<Content />);
-

@@ -39,8 +39,8 @@ type Props = {
   zoomStep?: number;
   showBadge?: boolean;
   resizable?: boolean;
-  emojis?: boolean
-}
+  emojis?: boolean;
+};
 
 function WidgetLayout({
   title,
@@ -68,65 +68,72 @@ function WidgetLayout({
   zoomStep,
   showBadge,
   resizable,
-  emojis
+  emojis,
 }: Props) {
   const dispatch = useDispatch();
-  const { dissableInput, showChat, visible } = useSelector((state: GlobalState) => ({
-    showChat: state.behavior.showChat,
-    dissableInput: state.behavior.disabledInput,
-    visible: state.preview.visible,
-  }));
+  const { dissableInput, showChat, visible } = useSelector(
+    (state: GlobalState) => ({
+      showChat: state.behavior.showChat,
+      dissableInput: state.behavior.disabledInput,
+      visible: state.preview.visible,
+    })
+  );
 
   const messageRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if(showChat) {
-      messageRef.current = document.getElementById('messages') as HTMLDivElement;
+    if (showChat) {
+      messageRef.current = document.getElementById(
+        'messages'
+      ) as HTMLDivElement;
     }
     return () => {
       messageRef.current = null;
-    }
-  }, [showChat])
-  
-  const eventHandle = evt => {
-    if(evt.target && evt.target.className === 'rcw-message-img') {
-      const { src, alt, naturalWidth, naturalHeight } = (evt.target as HTMLImageElement);
+    };
+  }, [showChat]);
+
+  const eventHandle = (evt) => {
+    if (evt.target && evt.target.className === 'rcw-message-img') {
+      const { src, alt, naturalWidth, naturalHeight } =
+        evt.target as HTMLImageElement;
       const obj = {
         src: src,
         alt: alt,
         width: naturalWidth,
         height: naturalHeight,
       };
-      dispatch(openFullscreenPreview(obj))
+      dispatch(openFullscreenPreview(obj));
     }
-  }
+  };
 
   /**
    * Previewer needs to prevent body scroll behavior when fullScreenMode is true
    */
   useEffect(() => {
     const target = messageRef?.current;
-    if(imagePreview && showChat) {
+    if (imagePreview && showChat) {
       target?.addEventListener('click', eventHandle, false);
     }
 
     return () => {
       target?.removeEventListener('click', eventHandle);
-    }
+    };
   }, [imagePreview, showChat]);
 
   useEffect(() => {
-    document.body.setAttribute('style', `overflow: ${visible || fullScreenMode ? 'hidden' : 'auto'}`)
-  }, [fullScreenMode, visible])
+    document.body.setAttribute(
+      'style',
+      `overflow: ${visible || fullScreenMode ? 'hidden' : 'auto'}`
+    );
+  }, [fullScreenMode, visible]);
 
   return (
     <div
       className={cn('rcw-widget-container', {
         'rcw-full-screen': fullScreenMode,
         'rcw-previewer': imagePreview,
-        'rcw-close-widget-container ': !showChat
-        })
-      }
+        'rcw-close-widget-container ': !showChat,
+      })}
     >
       <Header
         title={title}
@@ -142,7 +149,7 @@ function WidgetLayout({
         openImg={launcherOpenImg}
         showBadge={showBadge}
       />
-      {showChat &&
+      {showChat && (
         <Conversation
           title={title}
           subtitle={subtitle}
@@ -163,10 +170,13 @@ function WidgetLayout({
           resizable={resizable}
           emojis={emojis}
         />
-      }
-      {
-        imagePreview && <FullScreenPreview fullScreenMode={fullScreenMode} zoomStep={zoomStep} />
-      }
+      )}
+      {imagePreview && (
+        <FullScreenPreview
+          fullScreenMode={fullScreenMode}
+          zoomStep={zoomStep}
+        />
+      )}
     </div>
   );
 }

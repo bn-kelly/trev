@@ -1,29 +1,27 @@
 import { configure, mount } from 'enzyme';
-import { Provider } from 'react-redux'
-import configureMockStore from 'redux-mock-store'
+import { Provider } from 'react-redux';
+import configureMockStore from 'redux-mock-store';
 import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
 
 import Launcher from '../index';
 import Badge from '../components/Badge';
 
 configure({ adapter: new Adapter() });
-const mockStore =  configureMockStore()
+const mockStore = configureMockStore();
 
 describe('<Launcher />', () => {
   const createMessageComponent = ({ toggle, chatOpened, badge = 0 }) => {
     const store = mockStore({
       behavior: { showChat: chatOpened },
-      messages: { badgeCount: badge }
+      messages: { badgeCount: badge },
     });
 
     return mount(
       <Provider store={store}>
-        <Launcher
-          toggle={toggle}
-        />
+        <Launcher toggle={toggle} />
       </Provider>
     );
-  }
+  };
 
   it('should call toggle prop when clicked', () => {
     const toggle = jest.fn();
@@ -51,7 +49,11 @@ describe('<Launcher />', () => {
     const toggle = jest.fn();
     const chatOpened = false;
     const badge = 1;
-    const launcherComponent = createMessageComponent({ toggle, chatOpened, badge });
+    const launcherComponent = createMessageComponent({
+      toggle,
+      chatOpened,
+      badge,
+    });
     expect(launcherComponent.find(Badge).props().badge).toBe(1);
-  })
+  });
 });

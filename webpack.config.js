@@ -67,7 +67,9 @@ var options = {
             loader: 'sass-loader',
             options: {
               sassOptions: {
-                includePaths: [path.resolve(__dirname, 'src/components/ChatWidget/src/scss')]
+                includePaths: [
+                  path.resolve(__dirname, 'src/components/ChatWidget/src/scss'),
+                ],
               },
               sourceMap: true,
             },
@@ -120,8 +122,8 @@ var options = {
       },
       {
         test: /\.(jpg|png|gif|svg)$/,
-        type: 'asset/inline'
-      }
+        type: 'asset/inline',
+      },
     ],
   },
   resolve: {

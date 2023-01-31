@@ -23,7 +23,7 @@
   padding-right: 24px;
 
   .rcw-message-text {
-    @include message-bubble(#D6EEFF);
+    @include message-bubble(#d6eeff);
     white-space: pre-wrap;
     word-wrap: break-word;
   }

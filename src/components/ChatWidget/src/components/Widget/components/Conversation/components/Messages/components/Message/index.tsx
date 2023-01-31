@@ -13,22 +13,31 @@ import './styles.scss';
 type Props = {
   message: MessageTypes;
   showTimeStamp: boolean;
-}
+};
 
 function Message({ message, showTimeStamp }: Props) {
   const sanitizedHTML = markdownIt({ break: true })
     .use(markdownItClass, {
-      img: ['rcw-message-img']
+      img: ['rcw-message-img'],
     })
     .use(markdownItSup)
     .use(markdownItSanitizer)
-    .use(markdownItLinkAttributes, { attrs: { target: '_blank', rel: 'noopener' } })
+    .use(markdownItLinkAttributes, {
+      attrs: { target: '_blank', rel: 'noopener' },
+    })
     .render(message.text);
 
   return (
     <div className={`rcw-${message.sender}`}>
-      <div className="rcw-message-text" dangerouslySetInnerHTML={{ __html: sanitizedHTML.replace(/\n$/,'') }} />
-      {showTimeStamp && <span className="rcw-timestamp">{format(message.timestamp, 'hh:mm')}</span>}
+      <div
+        className="rcw-message-text"
+        dangerouslySetInnerHTML={{ __html: sanitizedHTML.replace(/\n$/, '') }}
+      />
+      {showTimeStamp && (
+        <span className="rcw-timestamp">
+          {format(message.timestamp, 'hh:mm')}
+        </span>
+      )}
     </div>
   );
 }

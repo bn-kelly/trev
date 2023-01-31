@@ -2,7 +2,6 @@
 @import 'common';
 
 .rcw-widget-container {
-
   .rcw-header {
     background-color: $white;
     border-radius: 16px;
@@ -46,7 +45,6 @@
 }
 
 .rcw-full-screen {
-
   .rcw-header {
     @include header-fs;
   }
@@ -65,9 +63,7 @@
 }
 
 @media screen and (max-width: 800px) {
-
   .rcw-conversation-container {
-
     .rcw-header {
       @include header-fs;
     }

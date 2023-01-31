@@ -1,17 +1,26 @@
 import { ElementType } from 'react';
 
-import { MessageTypes as MessageI, Link, CustomCompMessage, LinkParams } from '../store/types';
+import {
+  MessageTypes as MessageI,
+  Link,
+  CustomCompMessage,
+  LinkParams,
+} from '../store/types';
 
 import Message from '../components/Widget/components/Conversation/components/Messages/components/Message';
 import Snippet from '../components/Widget/components/Conversation/components/Messages/components/Snippet';
 import QuickButton from '../components/Widget/components/Conversation/components/QuickButtons/components/QuickButton';
 
-import { MESSAGES_TYPES, MESSAGE_SENDER, MESSAGE_BOX_SCROLL_DURATION } from '../constants';
+import {
+  MESSAGES_TYPES,
+  MESSAGE_SENDER,
+  MESSAGE_BOX_SCROLL_DURATION,
+} from '../constants';
 
 export function createNewMessage(
   text: string,
   sender: string,
-  id?: string,
+  id?: string
 ): MessageI {
   return {
     type: MESSAGES_TYPES.TEXT,
@@ -21,11 +30,11 @@ export function createNewMessage(
     timestamp: new Date(),
     showAvatar: true,
     customId: id,
-    unread: sender === MESSAGE_SENDER.RESPONSE
+    unread: sender === MESSAGE_SENDER.RESPONSE,
   };
 }
 
-export function createLinkSnippet(link: LinkParams, id?: string) : Link {
+export function createLinkSnippet(link: LinkParams, id?: string): Link {
   return {
     type: MESSAGES_TYPES.SNIPPET.LINK,
     component: Snippet,
@@ -36,11 +45,16 @@ export function createLinkSnippet(link: LinkParams, id?: string) : Link {
     timestamp: new Date(),
     showAvatar: true,
     customId: id,
-    unread: true
+    unread: true,
   };
 }
 
-export function createComponentMessage(component: ElementType, props: any, showAvatar: boolean, id?: string): CustomCompMessage {
+export function createComponentMessage(
+  component: ElementType,
+  props: any,
+  showAvatar: boolean,
+  id?: string
+): CustomCompMessage {
   return {
     type: MESSAGES_TYPES.CUSTOM_COMPONENT,
     component,
@@ -49,26 +63,33 @@ export function createComponentMessage(component: ElementType, props: any, showA
     timestamp: new Date(),
     showAvatar,
     customId: id,
-    unread: true
+    unread: true,
   };
 }
 
-export function createQuickButton(button: { label: string, value: string | number }) {
+export function createQuickButton(button: {
+  label: string;
+  value: string | number;
+}) {
   return {
     component: QuickButton,
     label: button.label,
-    value: button.value
+    value: button.value,
   };
 }
 
 // TODO: Clean functions and window use for SSR
 
 function sinEaseOut(timestamp: any, begining: any, change: any, duration: any) {
-  return change * ((timestamp = timestamp / duration - 1) * timestamp * timestamp + 1) + begining;
+  return (
+    change *
+      ((timestamp = timestamp / duration - 1) * timestamp * timestamp + 1) +
+    begining
+  );
 }
 
 /**
- * 
+ *
  * @param {*} target scroll target
  * @param {*} scrollStart
  * @param {*} scroll scroll distance
@@ -80,13 +101,18 @@ function scrollWithSlowMotion(target: any, scrollStart: any, scroll: number) {
     if (!start) {
       start = timestamp;
     }
-    let stepScroll = sinEaseOut(timestamp - start, 0, scroll, MESSAGE_BOX_SCROLL_DURATION);
+    let stepScroll = sinEaseOut(
+      timestamp - start,
+      0,
+      scroll,
+      MESSAGE_BOX_SCROLL_DURATION
+    );
     let total = scrollStart + stepScroll;
     target.scrollTop = total;
     if (total < scrollStart + scroll) {
       raf(step);
     }
-  }
+  };
   raf(step);
 }
 

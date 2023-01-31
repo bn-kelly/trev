@@ -73,7 +73,7 @@ export interface DeleteMessages {
 
 export interface SetQuickButtons {
   type: typeof SET_QUICK_BUTTONS;
-  buttons: Array<{ label: string, value: string | number }>;
+  buttons: Array<{ label: string; value: string | number }>;
 }
 
 export interface SetBadgeCount {
@@ -85,20 +85,33 @@ export interface MarkAllMessagesRead {
   type: typeof MARK_ALL_READ;
 }
 
-export type BehaviorActions = ToggleChat | ToggleInputDisabled | ToggleMsgLoader;
+export type BehaviorActions =
+  | ToggleChat
+  | ToggleInputDisabled
+  | ToggleMsgLoader;
 
-export type MessagesActions = AddUserMessage | AddResponseMessage | AddLinkSnippet | RenderCustomComponent
-                              | DropMessages | HideAvatar | DeleteMessages | MarkAllMessagesRead | SetBadgeCount;
+export type MessagesActions =
+  | AddUserMessage
+  | AddResponseMessage
+  | AddLinkSnippet
+  | RenderCustomComponent
+  | DropMessages
+  | HideAvatar
+  | DeleteMessages
+  | MarkAllMessagesRead
+  | SetBadgeCount;
 
 export type QuickButtonsActions = SetQuickButtons;
 
 export interface openFullscreenPreview {
   type: typeof OPEN_FULLSCREEN_PREVIEW;
-  payload: FullscreenPreviewState
+  payload: FullscreenPreviewState;
 }
 
 export interface closeFullscreenPreview {
   type: typeof CLOSE_FULLSCREEN_PREVIEW;
 }
 
-export type FullscreenPreviewActions = openFullscreenPreview | closeFullscreenPreview;
+export type FullscreenPreviewActions =
+  | openFullscreenPreview
+  | closeFullscreenPreview;
