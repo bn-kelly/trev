@@ -109,19 +109,19 @@ async function getEmails() {
 
       const from = email.payload.headers.find((h) => {
         return h.name === 'From';
-      }).value;
+      });
 
       const to = email.payload.headers.find((h) => {
         return h.name === 'To';
-      }).value;
+      });
 
       ret.push({
         id: email.id,
         threadId: email.threadId,
         date: email.internalDate,
         content: decodeBase64(data),
-        from: from,
-        to: to,
+        from: from ? from.value : '',
+        to: to ? to.value : '',
       });
     }
   }
@@ -212,8 +212,8 @@ async function summarizeEmails(emails) {
   for (const email of emails) {
     const prompt = `Summarize this for a business focus:
             ${email.content
-              .replace(/(?:https?|ftp):\/\/[\n\S]+/g, '')
-              .replace(/(\r\n|\n|\r)/gm, '')}`;
+        .replace(/(?:https?|ftp):\/\/[\n\S]+/g, '')
+        .replace(/(\r\n|\n|\r)/gm, '')}`;
     const response = await fetch('https://api.openai.com/v1/completions', {
       method: 'POST',
       headers: {
