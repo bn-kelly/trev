@@ -118,6 +118,10 @@ async function getEmails() {
         }
       }
 
+      const subject = email.payload.headers.find((h) => {
+        return h.name === 'Subject';
+      });
+
       const from = email.payload.headers.find((h) => {
         return h.name === 'From';
       });
@@ -125,12 +129,13 @@ async function getEmails() {
       const to = email.payload.headers.find((h) => {
         return h.name === 'To';
       });
-
+      console.log('original email', email);
       ret.push({
         id: email.id,
         threadId: email.threadId,
         date: email.internalDate,
         content: decodeBase64(data),
+        subject: subject ? subject.value : '',
         from: from ? from.value : '',
         to: to ? to.value : '',
       });
@@ -258,7 +263,7 @@ async function summarizeEmails(emails) {
 async function runQuery(message, emails) {
   let prompt = '';
   for (const email of emails) {
-    prompt = `${prompt}Q: question_id=${email.id}\nA: ${email.summary}\n`;
+    prompt = `${prompt}Q: question_id=${email.id}\nA: ${email.subject} ${email.summary}\n`;
   }
   prompt = `${prompt}Q: show me only question_id associated to ${message}`;
 
@@ -281,10 +286,12 @@ async function runQuery(message, emails) {
   const data = await response.json();
 
   if (data.choices && data.choices.length > 0) {
-    const ids = data.choices[0].text
-      .replace('A:', '')
-      .replace('question_id =', '')
-      .split('\n');
+    const regex = /[^a-f0-9]([a-f0-9]{16})/g;
+    let m, ids = [];
+    while (m = regex.exec(data.choices[0].text)) {
+      ids.push(m[1]);
+    }
+
     const answers = emails.filter((e) => {
       return ids.includes(e.id);
     });
