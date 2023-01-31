@@ -19,18 +19,8 @@ const Content = () => {
         const getStatus = async () => {
             const isAuthorizedGoogle = await getValueFromStorage(IS_AUTHORIZED_GOOGLE);
             const isEmailsImported = await getValueFromStorage(IS_EMAILS_IMPORTED);
-            console.log('isAuthorizedGoogle', isAuthorizedGoogle);
-            console.log('isEmailsImported', isEmailsImported);
             setAuthorized(isAuthorizedGoogle);
             setEmailsImported(isEmailsImported);
-
-            if (!isEmailsImported) {
-                chrome.runtime.sendMessage({
-                    action: IMPORT_EMAILS
-                }, (response) => {
-                    setEmailsImported(response);
-                });
-            }
         }
         getStatus();
 
@@ -57,9 +47,18 @@ const Content = () => {
             data: {
                 message,
             },
-        }, (response) => {
+        }, (emails) => {
             toggleMsgLoader();
-            addResponseMessage(response);
+
+            if (emails.length === 0) {
+                addResponseMessage('I cannot find any email.');
+            } else {
+                emails = emails.slice(0, 10);
+                addResponseMessage(`here's the last ${emails.length}:`);
+                for (const email of emails) {
+                    addResponseMessage(`${email.from}\n${email.content.substring(0, 39)}...`);
+                }
+            }
         });
     };
 

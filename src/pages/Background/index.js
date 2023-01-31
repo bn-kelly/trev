@@ -35,11 +35,11 @@ async function onMessageReceived(request, sender, sendResponse) {
 
         if (token) {
             setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 1 });
+            sendResponse(1);
         } else {
             setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
+            sendResponse(0);
         }
-
-        sendResponse(!!token);
     } else if (request.action === IMPORT_EMAILS) {
         let emails = await getEmails();
         emails = await summarizeEmails(emails);
@@ -51,16 +51,16 @@ async function onMessageReceived(request, sender, sendResponse) {
     } else if (request.action === NEW_USER_MESSAGE) {
         const emails = await getValueFromStorage(EMAILS, STORAGE_LOCAL);
         if (emails.length === 0) {
-            sendResponse('I cannot find any email.');
+            sendResponse([]);
         }
 
         const message = request.data.message;
         const answers = await runQuery(message, emails);
 
         if (answers.length > 0) {
-            sendResponse(`${answers[0].content.substring(0, 39)}...`);
+            sendResponse(answers);
         } else {
-            sendResponse('I cannot find any email.');
+            sendResponse([]);
         }
     }
 }
@@ -88,10 +88,6 @@ async function getEmails() {
     for (const emailId of emailIdList) {
         const email = await getEmail(emailId.id);
 
-        if (ret.length > 4) {
-            break;
-        }
-
         if (email) {
             let data = '';
             if (email.payload.parts && email.payload.parts.length > 0) {
@@ -111,11 +107,21 @@ async function getEmails() {
                 }
             }
 
+            const from = email.payload.headers.find((h) => {
+                return h.name === 'From';
+            }).value;
+
+            const to = email.payload.headers.find((h) => {
+                return h.name === 'To';
+            }).value;
+
             ret.push({
                 id: email.id,
                 threadId: email.threadId,
                 date: email.internalDate,
                 content: decodeBase64(data),
+                from: from,
+                to: to,
             });
         }
     }
