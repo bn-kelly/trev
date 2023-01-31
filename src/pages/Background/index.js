@@ -1,11 +1,15 @@
-import { setValueToStorage } from '../../global';
+import { getValueFromStorage, setValueToStorage } from '../../global';
+import { OPENAI_API_KEY } from 'secrets';
 import {
     AUTHORIZE_GOOGLE,
     NEW_USER_MESSAGE,
+    IMPORT_EMAILS,
+    IS_AUTHORIZED_GOOGLE,
+    IS_EMAILS_IMPORTED,
+    EMAILS,
+    STORAGE_GLOBAL,
+    STORAGE_LOCAL
 } from '../../constants';
-import { OPENAI_API_KEY } from 'secrets';
-
-let emails = [];
 
 async function init() {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -13,126 +17,70 @@ async function init() {
         return true;
     });
 
-    emails = await getEmails();
-    for (const email of emails) {
-        const prompt = `Summarize this for a business focus:
-            ${email.content
-                .replace(/(?:https?|ftp):\/\/[\n\S]+/g, '')
-                .replace(/(\r\n|\n|\r)/gm, '')}`;
-        const response = await fetch(
-            'https://api.openai.com/v1/completions',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${OPENAI_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: "text-davinci-003",
-                    prompt: prompt,
-                    temperature: 0,
-                    max_tokens: 1000,
-                    top_p: 1,
-                    frequency_penalty: 0,
-                    presence_penalty: 0,
-                }),
+    chrome.runtime.onInstalled.addListener(() => {
+        chrome.identity.clearAllCachedAuthTokens(async () => {
+            const token = await getAuthToken(false);
+            if (!token) {
+                setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
+                setValueToStorage({ [IS_EMAILS_IMPORTED]: false });
             }
-        );
-
-        const data = await response.json();
-        if (data.choices && data.choices.length > 0) {
-            email.summary = data.choices[0].text;
-        }
-    }
-    console.log('emails', emails);
+            chrome.tabs.create({ url: 'https://mail.google.com/' });
+        });
+    });
 }
 
 async function onMessageReceived(request, sender, sendResponse) {
     if (request.action === AUTHORIZE_GOOGLE) {
-        const token = await getAuthToken();
+        const token = await getAuthToken(true);
 
         if (token) {
-            setValueToStorage({ is_authorized_google: 1 });
+            setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 1 });
         } else {
-            setValueToStorage({ is_authorized_google: 0 });
+            setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
         }
 
         sendResponse(!!token);
+    } else if (request.action === IMPORT_EMAILS) {
+        let emails = await getEmails();
+        emails = await summarizeEmails(emails);
+
+        setValueToStorage({ [EMAILS]: emails }, STORAGE_LOCAL);
+        setValueToStorage({ [IS_EMAILS_IMPORTED]: true });
+        console.log('emails', emails);
+        sendResponse(true);
     } else if (request.action === NEW_USER_MESSAGE) {
+        const emails = await getValueFromStorage(EMAILS, STORAGE_LOCAL);
         if (emails.length === 0) {
             sendResponse('I cannot find any email.');
         }
 
         const message = request.data.message;
+        const answers = await runQuery(message, emails);
 
-        let prompt = '';
-        for (const email of emails) {
-            prompt = `${prompt}Q: question_id=${email.id}\nA: ${email.summary}\n`;
-        }
-        prompt = `${prompt}Q: show me only question_id associated to ${message}`;
-
-        const response = await fetch(
-            'https://api.openai.com/v1/completions',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${OPENAI_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: "text-davinci-003",
-                    prompt: prompt,
-                    temperature: 0,
-                    max_tokens: 60,
-                    top_p: 1,
-                    frequency_penalty: 0,
-                    presence_penalty: 0,
-                }),
-            }
-        );
-        const data = await response.json();
-
-        if (data.choices && data.choices.length > 0) {
-            const ids = data.choices[0].text
-                .replace('A:', '')
-                .replace('question_id =', '')
-                .split('\n');
-            const answers = emails.filter((e) => {
-                return ids.includes(e.id);
-            });
-
-            if (answers.length > 0) {
-                sendResponse(`${answers[0].content.substring(0, 39)}...`);
-            } else {
-                sendResponse('I cannot find any email.');
-            }
+        if (answers.length > 0) {
+            sendResponse(`${answers[0].content.substring(0, 39)}...`);
         } else {
             sendResponse('I cannot find any email.');
         }
     }
 }
 
-async function getAuthToken() {
+async function getAuthToken(interactive) {
     return new Promise((resolve) => {
-        chrome.identity.getAuthToken({ interactive: true }, (token) => {
+        chrome.identity.getAuthToken({ interactive: interactive }, (token) => {
             resolve(token);
         });
     });
 }
 
 async function getEmails() {
-    const token = await getAuthToken();
-    if (!token) {
-        return;
-    }
-
-    let response = await getEmailsWithPageToken(null, token);
+    let response = await getEmailsWithPageToken(null);
     let nextPageToken = response.nextPageToken;
     let emailIdList = response.messages;
     let ret = [];
 
     while (nextPageToken) {
-        response = await getEmailsWithPageToken(nextPageToken, token);
+        response = await getEmailsWithPageToken(nextPageToken);
         nextPageToken = response.nextPageToken;
         emailIdList = [...emailIdList, ...response.messages];
     }
@@ -176,7 +124,7 @@ async function getEmails() {
 }
 
 async function getEmailsWithPageToken(pageToken) {
-    const token = await getAuthToken();
+    const token = await getAuthToken(false);
     if (!token) {
         return { messages: [], nextPageToken: null };
     }
@@ -205,7 +153,7 @@ async function getEmailsWithPageToken(pageToken) {
 }
 
 async function getEmail(id) {
-    const token = await getAuthToken();
+    const token = await getAuthToken(false);
     if (!token) {
         return null;
     }
@@ -245,6 +193,86 @@ function decodeBase64(input) {
     }
 
     return atob(input);
+}
+
+async function summarizeEmails(emails) {
+    for (const email of emails) {
+        const prompt = `Summarize this for a business focus:
+            ${email.content
+                .replace(/(?:https?|ftp):\/\/[\n\S]+/g, '')
+                .replace(/(\r\n|\n|\r)/gm, '')}`;
+        const response = await fetch(
+            'https://api.openai.com/v1/completions',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: "text-davinci-003",
+                    prompt: prompt,
+                    temperature: 0,
+                    max_tokens: 1000,
+                    top_p: 1,
+                    frequency_penalty: 0,
+                    presence_penalty: 0,
+                }),
+            }
+        );
+
+        const data = await response.json();
+        if (data.choices && data.choices.length > 0) {
+            email.summary = data.choices[0].text;
+        }
+    }
+
+    return emails;
+}
+
+async function runQuery(message, emails) {
+    let prompt = '';
+    for (const email of emails) {
+        prompt = `${prompt}Q: question_id=${email.id}\nA: ${email.summary}\n`;
+    }
+    prompt = `${prompt}Q: show me only question_id associated to ${message}`;
+
+    const response = await fetch(
+        'https://api.openai.com/v1/completions',
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "text-davinci-003",
+                prompt: prompt,
+                temperature: 0,
+                max_tokens: 60,
+                top_p: 1,
+                frequency_penalty: 0,
+                presence_penalty: 0,
+            }),
+        }
+    );
+    const data = await response.json();
+
+    if (data.choices && data.choices.length > 0) {
+        const ids = data.choices[0].text
+            .replace('A:', '')
+            .replace('question_id =', '')
+            .split('\n');
+        const answers = emails.filter((e) => {
+            return ids.includes(e.id);
+        });
+
+        if (answers.length > 0) {
+            return answers;
+        }
+    }
+
+    return [];
 }
 
 init();
