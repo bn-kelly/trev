@@ -6,7 +6,7 @@ import markdownItSanitizer from 'markdown-it-sanitizer';
 import markdownItClass from '@toycode/markdown-it-class';
 import markdownItLinkAttributes from 'markdown-it-link-attributes';
 
-import { MessageTypes } from 'src/store/types';
+import { MessageTypes } from '../../../../../../../../store/types';
 
 import './styles.scss';
 

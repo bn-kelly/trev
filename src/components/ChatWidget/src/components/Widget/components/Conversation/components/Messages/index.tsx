@@ -78,7 +78,7 @@ function Messages({
   //   }
   // }
 
-  const isClient = (sender) => sender === MESSAGE_SENDER.CLIENT;
+  const isClient = (sender: any) => sender === MESSAGE_SENDER.CLIENT;
 
   return (
     <div id="messages" className="rcw-messages-container" ref={messageRef}>

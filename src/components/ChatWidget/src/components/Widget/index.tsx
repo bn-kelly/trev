@@ -73,7 +73,7 @@ function Widget({
     handleToggle ? handleToggle(isWidgetOpened()) : null;
   };
 
-  const handleMessageSubmit = (userInput) => {
+  const handleMessageSubmit = (userInput: string) => {
     if (!userInput.trim()) {
       return;
     }
@@ -83,7 +83,7 @@ function Widget({
     handleNewUserMessage(userInput);
   };
 
-  const onQuickButtonClicked = (event, value) => {
+  const onQuickButtonClicked = (event: any, value: any) => {
     event.preventDefault();
     handleQuickButtonClicked?.(value);
   };

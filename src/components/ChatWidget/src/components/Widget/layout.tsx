@@ -3,8 +3,8 @@ import { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import cn from 'classnames';
 
-import { GlobalState } from 'src/store/types';
-import { AnyFunction } from 'src/utils/types';
+import { GlobalState } from '../../store/types';
+import { AnyFunction } from '../../utils/types';
 import { openFullscreenPreview } from '../../store/actions';
 
 import Header from './components/Header';
@@ -92,7 +92,7 @@ function WidgetLayout({
     };
   }, [showChat]);
 
-  const eventHandle = (evt) => {
+  const eventHandle = (evt: any) => {
     if (evt.target && evt.target.className === 'rcw-message-img') {
       const { src, alt, naturalWidth, naturalHeight } =
         evt.target as HTMLImageElement;

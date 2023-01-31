@@ -57,14 +57,14 @@ function Conversation({
   emojis,
 }: Props) {
   const [containerDiv, setContainerDiv] = useState<HTMLElement | null>();
-  let startX, startWidth;
+  let startX: any, startWidth: any;
 
   useEffect(() => {
     const containerDiv = document.getElementById('rcw-conversation-container');
     setContainerDiv(containerDiv);
   }, []);
 
-  const initResize = (e) => {
+  const initResize = (e: any) => {
     if (resizable) {
       startX = e.clientX;
       if (document.defaultView && containerDiv) {
@@ -77,13 +77,13 @@ function Conversation({
     }
   };
 
-  const resize = (e) => {
+  const resize = (e: any) => {
     if (containerDiv) {
       containerDiv.style.width = startWidth - e.clientX + startX + 'px';
     }
   };
 
-  const stopResize = (e) => {
+  const stopResize = (e: any) => {
     window.removeEventListener('mousemove', resize, false);
     window.removeEventListener('mouseup', stopResize, false);
   };
@@ -92,7 +92,7 @@ function Conversation({
   const senderRef = useRef<ISenderRef>(null!);
   const [pickerStatus, setPicket] = useState(false);
 
-  const onSelectEmoji = (emoji) => {
+  const onSelectEmoji = (emoji: any) => {
     senderRef.current?.onSelectEmoji(emoji);
   };
 
@@ -100,7 +100,7 @@ function Conversation({
     setPicket((prevPickerStatus) => !prevPickerStatus);
   };
 
-  const handlerSendMsn = (event) => {
+  const handlerSendMsn = (event: any) => {
     sendMessage(event);
     if (pickerStatus) setPicket(false);
   };
