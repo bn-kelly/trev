@@ -135,8 +135,11 @@ async function getEmailsWithPageToken(pageToken) {
     return { messages: [], nextPageToken: null };
   }
 
+  const today = new Date();
+  const qDate = new Date(new Date().setDate(today.getDate() - 30));
+  const query = `after:${qDate.getFullYear()}/${qDate.getMonth() + 1}/${qDate.getDate()}`;
   let url =
-    'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500';
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500&q=${query}`;
   if (pageToken) {
     url = `${url}&pageToken=${pageToken}`;
   }
