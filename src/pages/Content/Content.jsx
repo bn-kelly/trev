@@ -5,7 +5,7 @@ import { AUTHORIZE_GOOGLE, NEW_USER_MESSAGE } from '../../constants';
 import { getValueFromStorage } from '../../global';
     
 const Content = () => {
-    const [authorized, setAuthorized] = useState();
+    const [authorized, setAuthorized] = useState(-1);
     
     useEffect(() => {
         const getAuthStatus = async () => {
@@ -41,14 +41,17 @@ const Content = () => {
 
     return (
         <div>
-            { authorized &&
-            <ChatWidget
-                title='Trev'
-                senderPlaceHolder='what would you like to find?'
-                showBadge={false}
-                handleNewUserMessage={handleNewUserMessage}
-            />}
-            { !authorized && <GoogleAuth handleAuthorization={handleAuthorization} />}
+            { authorized == 1 &&
+                <ChatWidget
+                    title='Trev'
+                    senderPlaceHolder='what would you like to find?'
+                    showBadge={false}
+                    handleNewUserMessage={handleNewUserMessage}
+                />
+            }
+            {authorized == 0 &&
+                <GoogleAuth handleAuthorization={handleAuthorization}/>
+            }
         </div>
     );
 };

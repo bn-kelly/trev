@@ -12,6 +12,7 @@
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'"
   },
   "dependencies": {
+    "@fontsource/dm-sans": "^4.5.9",
     "classnames": "^2.2.6",
     "date-fns": "^2.11.1",
     "emoji-mart": "^3.0.1",

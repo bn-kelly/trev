@@ -1,5 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import "@fontsource/dm-sans";
 import Content from './Content';
 
 console.log('Content script works!');

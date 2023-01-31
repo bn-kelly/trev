@@ -8,9 +8,10 @@
   background-color: $white;
   border: 0;
   border-radius: 50%;
-  width: 45px;
-  height: 45px;
+  width: 35px;
+  height: 35px;
   padding: 0px;
+  margin-right: 19px;
   cursor: pointer;
 
   &:focus {
@@ -20,14 +21,14 @@
 
 .rcw-open-launcher {
   @include animation(0, 0.5s, rotation-rl);
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
 }
 
 .rcw-close-launcher {
   @include animation(0, 0.5s, rotation-lr);
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
 }
 
 @media screen and (max-width: 800px){

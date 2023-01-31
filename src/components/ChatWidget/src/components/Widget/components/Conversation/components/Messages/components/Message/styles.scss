@@ -2,7 +2,6 @@
 @import 'common';
 
 .rcw-message {
-  margin: 10px;
   display: flex;
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -21,10 +20,10 @@
   display: flex;
   flex-direction: column;
   margin-left: auto;
+  padding-right: 24px;
 
   .rcw-message-text {
-    @include message-bubble($turqois-2);
-
+    @include message-bubble(#D6EEFF);
     white-space: pre-wrap;
     word-wrap: break-word;
   }
@@ -38,9 +37,10 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  padding-left: 14px;
 
   .rcw-message-text {
-    @include message-bubble($grey-2);
+    @include message-bubble($white);
   }
 }
 

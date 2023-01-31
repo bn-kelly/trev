@@ -9,6 +9,7 @@ type Props = {
   subtitle: string;
   toggleChat: () => void;
   showCloseButton: boolean;
+  showLogo: boolean;
   titleAvatar?: string;
   chatId: string;
   openLabel: string;
@@ -23,6 +24,7 @@ function Header({
   subtitle,
   toggleChat,
   showCloseButton,
+  showLogo,
   titleAvatar,
   chatId,
   openLabel,
@@ -35,7 +37,7 @@ function Header({
     <div className="rcw-header">
       <h4 className="rcw-title">
         {title}
-        <img src={camera} className="rcw-logo" alt="logo" />
+        {showLogo && <img src={camera} className="rcw-logo" alt="logo" />}
       </h4>
       
       <Launcher

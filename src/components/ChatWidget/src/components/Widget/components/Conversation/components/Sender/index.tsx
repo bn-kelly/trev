@@ -6,9 +6,7 @@ import cn from 'classnames';
 import { GlobalState } from 'src/store/types';
 
 import { getCaretIndex, isFirefox, updateCaret, insertNodeAtCaret, getSelection } from '../../../../../../utils/contentEditable'
-const send = require('../../../../../../../assets/send_button.svg') as string;
-const emoji = require('../../../../../../../assets/icon-smiley.svg') as string;
-const camera = require('../../../../../../../assets/logo.svg') as string;
+const logo = require('../../../../../../../assets/logo.svg') as string;
 const brRegex = /<br>/g;
 
 import './style.scss';
@@ -144,7 +142,7 @@ function Sender({ sendMessage, placeholder, disabledInput, autofocus, onTextInpu
           onKeyUp={handlerOnKeyUp}
           onKeyDown={handlerOnKeyDown}
         />
-        <img src={camera} className="rcw-logo" alt="logo" />
+        <img src={logo} className="rcw-logo" alt="logo" />
       </div>
     </div>
   );

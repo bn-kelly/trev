@@ -52,9 +52,9 @@ async function onMessageReceived(request, sender, sendResponse) {
         const token = await getAuthToken();
 
         if (token) {
-            setValueToStorage({ is_authorized_google: true });
+            setValueToStorage({ is_authorized_google: 1 });
         } else {
-            setValueToStorage({ is_authorized_google: false });
+            setValueToStorage({ is_authorized_google: 0 });
         }
 
         sendResponse(!!token);

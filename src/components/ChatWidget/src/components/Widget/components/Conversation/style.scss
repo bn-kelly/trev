@@ -5,9 +5,12 @@
 
 .rcw-conversation-container {
   border-radius: 10px;
-  min-width: 370px;
+  min-width: 280px;
   max-width: 90vw;
   position: relative;
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 400;
 
   &.active {
     opacity: 1;

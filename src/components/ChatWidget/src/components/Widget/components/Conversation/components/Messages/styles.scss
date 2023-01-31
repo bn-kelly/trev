@@ -6,8 +6,11 @@
   height: 50vh;
   max-height: 410px;
   overflow-y: scroll;
-  padding-top: 10px;
   -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .rcw-full-screen {

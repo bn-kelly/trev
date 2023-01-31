@@ -133,6 +133,7 @@ function WidgetLayout({
         subtitle={subtitle}
         toggleChat={onToggleConversation}
         showCloseButton={showCloseButton}
+        showLogo={!showChat}
         titleAvatar={titleAvatar}
         chatId={chatId}
         openLabel={launcherOpenLabel}
