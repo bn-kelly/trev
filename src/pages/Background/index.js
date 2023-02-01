@@ -24,6 +24,7 @@ async function init() {
         await setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 0 });
         await setValueToStorage({ [IS_EMAILS_IMPORTED]: false });
       } else {
+        await setValueToStorage({ [IS_AUTHORIZED_GOOGLE]: 1 });
         await setValueToStorage({ [IS_EMAILS_IMPORTED]: false });
         importEmails();
       }
@@ -230,7 +231,7 @@ function decodeBase64(input) {
 
 async function summarizeEmails(emails) {
   for (const email of emails) {
-    const prompt = `Summarize this for a business focus:
+    const prompt = `Summarize this:
             ${email.content
         .replace(/(?:https?|ftp):\/\/[\n\S]+/g, '')
         .replace(/(\r\n|\n|\r)/gm, '')}`;
@@ -245,7 +246,7 @@ async function summarizeEmails(emails) {
         prompt: prompt,
         temperature: 0,
         max_tokens: 1000,
-        top_p: 1,
+        top_p: 0,
         frequency_penalty: 0,
         presence_penalty: 0,
       }),
@@ -277,8 +278,8 @@ async function runQuery(message, emails) {
       model: 'text-davinci-003',
       prompt: prompt,
       temperature: 0,
-      max_tokens: 60,
-      top_p: 1,
+      max_tokens: 100,
+      top_p: 0,
       frequency_penalty: 0,
       presence_penalty: 0,
     }),

@@ -60,7 +60,7 @@ const Content = () => {
           addResponseMessage(`here's the last ${emails.length}:`);
           for (const email of emails) {
             addResponseMessage(
-              `${email.from}\n${email.content.substring(0, 39)}...`
+              `**${email.from}**\n${email.content.substring(0, 39)}...`
             );
           }
         }
