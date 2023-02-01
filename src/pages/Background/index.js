@@ -7,8 +7,9 @@ import {
   IS_AUTHORIZED_GOOGLE,
   IS_EMAILS_IMPORTED,
   EMAILS,
-  STORAGE_GLOBAL,
   STORAGE_LOCAL,
+  LAST_TIME_IMPORTED_EMAILS,
+  INTERVAL_IMPORT_EMAILS,
 } from '../../constants';
 
 async function init() {
@@ -31,6 +32,8 @@ async function init() {
       chrome.tabs.create({ url: 'https://mail.google.com/' });
     });
   });
+
+  importEmailsPeriodically();
 }
 
 async function onMessageReceived(request, sender, sendResponse) {
@@ -78,6 +81,7 @@ async function importEmails() {
 
   await setValueToStorage({ [EMAILS]: emails }, STORAGE_LOCAL);
   await setValueToStorage({ [IS_EMAILS_IMPORTED]: true });
+  await setValueToStorage({ [LAST_TIME_IMPORTED_EMAILS]: Date.now() });
   console.log('emails', emails);
 }
 
@@ -303,6 +307,20 @@ async function runQuery(message, emails) {
   }
 
   return [];
+}
+
+async function importEmailsPeriodically() {
+  setTimeout(importEmailsPeriodically, INTERVAL_IMPORT_EMAILS);
+
+  const lastTime = await getValueFromStorage(LAST_TIME_IMPORTED_EMAILS);
+
+  if (!lastTime) {
+    return;
+  }
+
+  if (Date.now() - lastTime > INTERVAL_IMPORT_EMAILS) {
+    importEmails();
+  }
 }
 
 init();

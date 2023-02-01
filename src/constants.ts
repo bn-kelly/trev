@@ -6,3 +6,5 @@ export const IS_EMAILS_IMPORTED = 'is_emails_imported';
 export const EMAILS = 'emails';
 export const STORAGE_GLOBAL = 'storage_global';
 export const STORAGE_LOCAL = 'storage_local';
+export const INTERVAL_IMPORT_EMAILS = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+export const LAST_TIME_IMPORTED_EMAILS = 'last_time_imported_emails';
