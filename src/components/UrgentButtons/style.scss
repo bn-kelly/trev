@@ -1,0 +1,46 @@
+.urgent-buttons-container {
+  padding-left: 14px;
+  padding-right: 24px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .urgent-button {
+    background-color: #fff;
+    border: 1px solid #e3e3e3;
+    border-radius: 8px;
+    max-width: 215px;
+    padding-left: 15px;
+    padding-right: 13px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    font-size: 11px;
+    line-height: 17px;
+    font-weight: 400;
+    font-family: "DM Sans";
+    font-style: normal;
+    color: rgb(0, 0, 0);
+  }
+  .urgent-buttons-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  .btn-urgent {
+    color: #A0A0A0;
+  }
+  .btn-investor {
+    background-color: #DFFFDE;
+    cursor: pointer;
+  }
+  .btn-fundraising {
+    background-color: #FFF5DE;
+    cursor: pointer;
+  }
+  .btn-warm {
+    background-color: #D6EEFF;
+    cursor: pointer;
+  }
+}

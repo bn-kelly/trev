@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react';
 import {
   ChatWidget,
   toggleMsgLoader,
+  addUserMessage,
   addResponseMessage,
+  renderCustomComponent,
 } from '../../components/ChatWidget';
 import GoogleAuth from '../../components/GoogleAuth';
 import Spinner from '../../components/Spinner';
+import UrgentButtons from '../../components/UrgentButtons';
 import { getValueFromStorage } from '../../global';
 import {
   AUTHORIZE_GOOGLE,
@@ -18,28 +21,6 @@ import {
 const Content = () => {
   const [authorized, setAuthorized] = useState(-1);
   const [emailsImported, setEmailsImported] = useState(false);
-
-  useEffect(() => {
-    const getStatus = async () => {
-      const isAuthorizedGoogle = await getValueFromStorage(
-        IS_AUTHORIZED_GOOGLE
-      );
-      setAuthorized(isAuthorizedGoogle);
-
-      if (isAuthorizedGoogle) {
-        const interval = setInterval(async () => {
-          const isEmailsImported = await getValueFromStorage(IS_EMAILS_IMPORTED);
-          setEmailsImported(isEmailsImported);
-          if (isEmailsImported) {
-            clearInterval(interval);
-          }
-        }, 1000);
-      }
-    };
-    getStatus();
-
-    addResponseMessage('gm! what emails would you like to find?');
-  }, []);
 
   const handleAuthorization = () => {
     chrome.runtime.sendMessage(
@@ -86,6 +67,51 @@ const Content = () => {
       }
     );
   };
+
+  const handleInvestorUpdates = () => {
+    const message = 'find emails with investor updates';
+    addUserMessage(message);
+    handleNewUserMessage(message);
+  }
+
+  const handleFundraisingPitches = () => {
+    const message = 'find emails with fundraise pitches';
+    addUserMessage(message);
+    handleNewUserMessage(message);
+  }
+
+  const handleWarmIntros = () => {
+    const message = 'find emails with warm intros';
+    addUserMessage(message);
+    handleNewUserMessage(message);
+  }
+
+  useEffect(() => {
+    const getStatus = async () => {
+      const isAuthorizedGoogle = await getValueFromStorage(
+        IS_AUTHORIZED_GOOGLE
+      );
+      setAuthorized(isAuthorizedGoogle);
+
+      if (isAuthorizedGoogle) {
+        const interval = setInterval(async () => {
+          const isEmailsImported = await getValueFromStorage(IS_EMAILS_IMPORTED);
+          setEmailsImported(isEmailsImported);
+          if (isEmailsImported) {
+            clearInterval(interval);
+          }
+        }, 1000);
+      }
+    };
+    getStatus();
+
+    addResponseMessage('gm! what emails would you like to find?');
+    renderCustomComponent(UrgentButtons, {
+      handleInvestorUpdates,
+      handleFundraisingPitches,
+      handleWarmIntros,
+    }, false, 'urgent-buttons');
+  }, []);
 
   return (
     <div>
