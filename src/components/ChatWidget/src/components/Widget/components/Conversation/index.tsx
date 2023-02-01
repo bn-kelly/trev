@@ -3,6 +3,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Picker } from 'emoji-mart';
 import cn from 'classnames';
 
+import Spinner from './components/Spinner';
 import Messages from './components/Messages';
 import Sender from './components/Sender';
 import QuickButtons from './components/QuickButtons';
@@ -31,6 +32,7 @@ type Props = {
   onQuickButtonClicked?: AnyFunction;
   onTextInputChange?: (event: any) => void;
   sendButtonAlt: string;
+  showSpinner?: boolean;
   showTimeStamp: boolean;
   resizable?: boolean;
   emojis?: boolean;
@@ -52,6 +54,7 @@ function Conversation({
   onQuickButtonClicked,
   onTextInputChange,
   sendButtonAlt,
+  showSpinner,
   showTimeStamp,
   resizable,
   emojis,
@@ -112,6 +115,9 @@ function Conversation({
       className={cn('rcw-conversation-container', className)}
       aria-live="polite"
     >
+      {showSpinner && (
+        <Spinner />
+      )}
       {resizable && <div className="rcw-conversation-resizer" />}
       <Messages
         profileAvatar={profileAvatar}
@@ -134,7 +140,7 @@ function Conversation({
         ref={senderRef}
         sendMessage={handlerSendMsn}
         placeholder={senderPlaceHolder}
-        disabledInput={disabledInput}
+        disabledInput={!!showSpinner}
         autofocus={autofocus}
         onTextInputChange={onTextInputChange}
         buttonAlt={sendButtonAlt}

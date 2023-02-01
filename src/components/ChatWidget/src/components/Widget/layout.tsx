@@ -37,6 +37,7 @@ type Props = {
   showTimeStamp: boolean;
   imagePreview?: boolean;
   zoomStep?: number;
+  showSpinner?: boolean;
   showBadge?: boolean;
   resizable?: boolean;
   emojis?: boolean;
@@ -66,6 +67,7 @@ function WidgetLayout({
   showTimeStamp,
   imagePreview,
   zoomStep,
+  showSpinner,
   showBadge,
   resizable,
   emojis,
@@ -166,6 +168,7 @@ function WidgetLayout({
           onQuickButtonClicked={onQuickButtonClicked}
           onTextInputChange={onTextInputChange}
           sendButtonAlt={sendButtonAlt}
+          showSpinner={showSpinner}
           showTimeStamp={showTimeStamp}
           resizable={resizable}
           emojis={emojis}

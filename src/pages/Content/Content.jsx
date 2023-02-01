@@ -7,7 +7,6 @@ import {
   renderCustomComponent,
 } from '../../components/ChatWidget';
 import GoogleAuth from '../../components/GoogleAuth';
-import Spinner from '../../components/Spinner';
 import UrgentButtons from '../../components/UrgentButtons';
 import { getValueFromStorage } from '../../global';
 import {
@@ -118,11 +117,11 @@ const Content = () => {
       {authorized == 0 && (
         <GoogleAuth handleAuthorization={handleAuthorization} />
       )}
-      {authorized == 1 && !emailsImported && <Spinner />}
-      {authorized == 1 && emailsImported && (
+      {authorized == 1 && (
         <ChatWidget
           title="Trev"
           senderPlaceHolder="what would you like to find?"
+          showSpinner={!emailsImported}
           showBadge={false}
           handleNewUserMessage={handleNewUserMessage}
         />
